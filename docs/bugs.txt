@@ -1,0 +1,8 @@
+DriverException: set session_replication_role = 'replica'; - permission denied to set parameter "session_replication_role"
+
+error when loading database first time.
+
+npx mikro-orm schema:create --fk-checks -r
+
+and creates the schema
+

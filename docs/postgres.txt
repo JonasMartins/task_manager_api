@@ -1,0 +1,9 @@
+create role dev with password '...';
+create database task_manager;
+
+grant all privileges on database task_manager to dev;
+alter role dev with login; 
+
+psql -d task_manager -U dev
+
+docker exec -it container_id /bin/bash
