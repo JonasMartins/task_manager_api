@@ -51,7 +51,7 @@ services:
             - pg-data:/var/lib/postgresql/data
         environment:
             POSTGRES_USER: dev
-            POSTGRES_PASSWORD: _devpass
+            POSTGRES_PASSWORD: pb_dev
 
     adminer:
         image: adminer

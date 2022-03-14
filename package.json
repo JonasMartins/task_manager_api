@@ -34,6 +34,7 @@
         "uuid": "^8.3.2"
     },
     "devDependencies": {
+        "@mikro-orm/migrations": "^5.1.0",
         "@nestjs/cli": "^8.0.0",
         "@nestjs/schematics": "^8.0.0",
         "@nestjs/testing": "^8.0.0",

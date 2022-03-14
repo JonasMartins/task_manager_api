@@ -4,6 +4,24 @@ create database task_manager;
 grant all privileges on database task_manager to dev;
 alter role dev with login; 
 
+log in with postgres user and:
+
+alter user dev with superuser;
+
 psql -d task_manager -U dev
 
-docker exec -it container_id /bin/bash
+docker exec -it container_id bash
+
+WARNING (1)
+
+to integrate docker postgres and the api services, 
+it needs to have the same networks prop name.
+
+WARNING (2)
+
+if these props are seted:
+POSTGRES_USER: dev
+POSTGRES_PASSWORD: _devpass
+
+the main postgres user will not be created, 
+iff error, try remove all and build again
