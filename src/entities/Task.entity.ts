@@ -11,7 +11,10 @@ export class Task extends BaseEntity {
     @Property({ default: false })
     done: boolean;
 
-    @ManyToOne(() => User)
+    @ManyToOne(() => User, {
+        onUpdateIntegrity: "set null",
+        onDelete: "cascade",
+    })
     creator!: User;
 
     @Enum(() => TaskPriority)

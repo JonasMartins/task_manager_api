@@ -1,4 +1,4 @@
-import { EntityRepository } from "@mikro-orm/core";
+import { EntityRepository, wrap } from "@mikro-orm/core";
 import { InjectRepository } from "@mikro-orm/nestjs";
 import {
     HttpException,
@@ -47,5 +47,28 @@ export class TaskService {
         await this.taskRepository.persist(task).flush();
 
         return task;
+    }
+
+    async update(@Param() id: string, dto: TaskDto) {
+        const task = await this.taskRepository.findOne(id);
+
+        if (!task) {
+            throw new HttpException("Email not found.", HttpStatus.NOT_FOUND);
+        }
+
+        wrap(task).assign(dto);
+        await this.taskRepository.persistAndFlush(task);
+
+        return task;
+    }
+
+    async delete(@Param() id: string) {
+        try {
+            const task = await this.taskRepository.findOne(id);
+            await this.taskRepository.removeAndFlush(task);
+            return { deleted: true };
+        } catch (e) {
+            return { error: e.message };
+        }
     }
 }

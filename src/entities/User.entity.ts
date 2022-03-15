@@ -21,6 +21,9 @@ export class User extends BaseEntity {
     @Property({ hidden: true })
     password: string;
 
+    @Property({ nullable: true })
+    picture: string;
+
     @OneToMany(() => Task, (t) => t.creator, { cascade: [Cascade.ALL] })
     tasks = new Collection<Task>(this);
 }
