@@ -1,5 +1,13 @@
-import { Entity, Property, Unique } from "@mikro-orm/core";
+import {
+    Entity,
+    Property,
+    Unique,
+    OneToMany,
+    Cascade,
+    Collection,
+} from "@mikro-orm/core";
 import { BaseEntity } from "./Base.entity";
+import { Task } from "./Task.entity";
 
 @Entity()
 export class User extends BaseEntity {
@@ -12,4 +20,7 @@ export class User extends BaseEntity {
 
     @Property({ hidden: true })
     password: string;
+
+    @OneToMany(() => Task, (t) => t.creator, { cascade: [Cascade.ALL] })
+    tasks = new Collection<Task>(this);
 }

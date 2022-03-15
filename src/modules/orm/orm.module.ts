@@ -1,11 +1,12 @@
-import { Module } from '@nestjs/common';
-import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { User } from './../../entities/User.entity';
+import { Module } from "@nestjs/common";
+import { MikroOrmModule } from "@mikro-orm/nestjs";
+import { User } from "./../../entities/User.entity";
+import { Task } from "./../../entities/Task.entity";
 @Module({
     imports: [
         MikroOrmModule.forRoot(),
         MikroOrmModule.forFeature({
-            entities: [User],
+            entities: [User, Task],
         }),
     ],
     exports: [MikroOrmModule],

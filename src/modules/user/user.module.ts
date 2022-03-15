@@ -8,6 +8,6 @@ import { UserService } from "./user.service";
     imports: [OrmModule],
     controllers: [UserController],
     providers: [UserService, JwtStrategy],
-    exports: [UserService],
+    exports: [],
 })
 export class UserModule {}

@@ -3,7 +3,7 @@ import { InjectRepository } from "@mikro-orm/nestjs";
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
-import { User } from "src/entities/User.entity";
+import { User } from "./../../entities/User.entity";
 import { AuthDto } from "./dto";
 import { LoginDto } from "./dto/login.dto";
 
@@ -52,10 +52,6 @@ export class AuthService {
             throw new HttpException("Wrong Password.", HttpStatus.UNAUTHORIZED);
         }
         return this.signToken(prevUser.id, prevUser.email);
-    }
-
-    logout() {
-        return { msg: "test" };
     }
 
     async signToken(
