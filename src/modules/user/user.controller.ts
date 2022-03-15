@@ -1,12 +1,15 @@
-import { Controller, Get } from '@nestjs/common';
-import { UserService } from './user.service';
+import { Controller, Get, Request, UseGuards } from "@nestjs/common";
+import { UserService } from "./user.service";
+import { JwtAuthGuard } from "../auth/strategy/jwt-auth.guard";
+import { Request as ExReq } from "express";
 
-@Controller()
+@Controller("users")
 export class UserController {
-    constructor(private authService: UserService) {}
+    constructor(private userService: UserService) {}
 
-    @Get('hello')
-    register() {
-        return this.authService.hello();
+    @UseGuards(JwtAuthGuard)
+    @Get("profile")
+    getProfile(@Request() req: ExReq) {
+        return this.userService.profile(req);
     }
 }
