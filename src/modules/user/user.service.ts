@@ -7,6 +7,7 @@ import {
     Param,
     Request,
 } from "@nestjs/common";
+import { DeletedType, UserResponse } from "src/utils/types";
 import { AuthDto } from "../auth/dto";
 import { User } from "./../../entities/User.entity";
 
@@ -17,36 +18,40 @@ export class UserService {
         private readonly userRepository: EntityRepository<User>,
     ) {}
 
-    async profile(@Request() req) {
+    async profile(@Request() req): Promise<UserResponse> {
         const user = await this.userRepository.findOne(req.user.userId);
-        return user;
+        return { user };
     }
 
-    async getById(@Param() id: string) {
+    async getById(@Param() id: string): Promise<UserResponse> {
         const user = await this.userRepository.findOne(id, {
             populate: ["tasks"],
         });
 
         if (!user) {
-            return new User();
+            return {
+                errors: [{ field: "id", message: "User not Found." }],
+            };
         }
-        return user;
+        return { user };
     }
 
-    async update(@Param() id: string, dto: AuthDto) {
+    async update(@Param() id: string, dto: AuthDto): Promise<UserResponse> {
         const user = await this.userRepository.findOne(id);
 
         if (!user) {
-            throw new HttpException("Email not found.", HttpStatus.NOT_FOUND);
+            return {
+                errors: [{ field: "email", message: "Email not found." }],
+            };
         }
 
         wrap(user).assign(dto);
         await this.userRepository.persistAndFlush(user);
 
-        return user;
+        return { user };
     }
 
-    async delete(@Param() id: string) {
+    async delete(@Param() id: string): Promise<DeletedType> {
         try {
             const task = await this.userRepository.findOne(id);
             await this.userRepository.removeAndFlush(task);

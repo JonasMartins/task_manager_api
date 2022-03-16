@@ -1,8 +1,10 @@
 import { EntityRepository } from "@mikro-orm/core";
 import { InjectRepository } from "@mikro-orm/nestjs";
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable, Res } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
+import { Response } from "express";
+import { LoginResponse } from "src/utils/types";
 import { User } from "./../../entities/User.entity";
 import { AuthDto } from "./dto";
 import { LoginDto } from "./dto/login.dto";
@@ -15,16 +17,15 @@ export class AuthService {
         private jwt: JwtService,
     ) {}
 
-    async register(dto: AuthDto): Promise<{ access_token: string }> {
+    async register(dto: AuthDto): Promise<LoginResponse> {
         const prevUser = await this.userRepository.findOne({
             email: dto.email,
         });
 
         if (prevUser) {
-            throw new HttpException(
-                "Email already takken",
-                HttpStatus.UNAUTHORIZED,
-            );
+            return {
+                errors: [{ field: "email", message: "Email already takken" }],
+            };
         }
 
         const hashPass = await bcrypt.hash(dto.password, 10);
@@ -39,17 +40,21 @@ export class AuthService {
         return this.signToken(user.id, user.email);
     }
 
-    async login(dto: LoginDto): Promise<{ access_token: string }> {
+    async login(dto: LoginDto): Promise<LoginResponse> {
         const prevUser = await this.userRepository.findOne({
             email: dto.email,
         });
 
         if (!prevUser) {
-            throw new HttpException("Email not found.", HttpStatus.NOT_FOUND);
+            return {
+                errors: [{ field: "email", message: "Email not Found." }],
+            };
         }
-        const pass = bcrypt.compare(dto.password, prevUser.password);
+        const pass = await bcrypt.compare(dto.password, prevUser.password);
         if (!pass) {
-            throw new HttpException("Wrong Password.", HttpStatus.UNAUTHORIZED);
+            return {
+                errors: [{ field: "password", message: "Wrong Password." }],
+            };
         }
         return this.signToken(prevUser.id, prevUser.email);
     }

@@ -1,12 +1,7 @@
 import { EntityRepository, wrap } from "@mikro-orm/core";
 import { InjectRepository } from "@mikro-orm/nestjs";
-import {
-    HttpException,
-    HttpStatus,
-    Injectable,
-    Param,
-    Request,
-} from "@nestjs/common";
+import { Injectable, Param, Request } from "@nestjs/common";
+import { DeletedType, TaskResponse, TasksResponse } from "src/utils/types";
 import { TaskDto } from "../auth/dto/task.dto";
 import { UserService } from "../user/user.service";
 import { Task } from "./../../entities/Task.entity";
@@ -19,21 +14,25 @@ export class TaskService {
         private userService: UserService,
     ) {}
 
-    async myTasks(@Request() req) {
+    async myTasks(@Request() req): Promise<TasksResponse> {
         const user = await this.userService.getById(req.user.userId);
-        return user.tasks;
+        return { tasks: user.user.tasks };
     }
 
-    async findOne(@Param() id: string) {
+    async findOne(@Param() id: string): Promise<TaskResponse> {
         const task = await this.taskRepository.findOne({ id });
-        return task;
+        return { task };
     }
 
-    async create(dto: TaskDto): Promise<Task> {
+    async create(dto: TaskDto): Promise<TaskResponse> {
         const creator = await this.userService.getById(dto.creator_id);
 
         if (!creator) {
-            throw new HttpException("Creator not found", HttpStatus.NOT_FOUND);
+            return {
+                errors: [
+                    { field: "creator_id", message: "Creator not found." },
+                ],
+            };
         }
 
         const task = this.taskRepository.create({
@@ -41,28 +40,30 @@ export class TaskService {
             done: dto.done,
             description: dto.description,
             priority: dto.priority,
-            creator,
+            creator: creator.user,
         });
 
         await this.taskRepository.persist(task).flush();
 
-        return task;
+        return { task };
     }
 
-    async update(@Param() id: string, dto: TaskDto) {
+    async update(@Param() id: string, dto: TaskDto): Promise<TaskResponse> {
         const task = await this.taskRepository.findOne(id);
 
         if (!task) {
-            throw new HttpException("Email not found.", HttpStatus.NOT_FOUND);
+            return {
+                errors: [{ field: "email", message: "Email not found." }],
+            };
         }
 
         wrap(task).assign(dto);
         await this.taskRepository.persistAndFlush(task);
 
-        return task;
+        return { task };
     }
 
-    async delete(@Param() id: string) {
+    async delete(@Param() id: string): Promise<DeletedType> {
         try {
             const task = await this.taskRepository.findOne(id);
             await this.taskRepository.removeAndFlush(task);
