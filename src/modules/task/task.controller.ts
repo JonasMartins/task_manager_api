@@ -11,7 +11,6 @@ import {
 } from "@nestjs/common";
 import { JwtAuthGuard } from "../auth/strategy/jwt-auth.guard";
 import { TaskService } from "./task.service";
-import { Request as ExReq } from "express";
 import { TaskDto } from "../auth/dto/task.dto";
 
 @Controller("tasks")
@@ -20,8 +19,8 @@ export class TaskController {
 
     @UseGuards(JwtAuthGuard)
     @Get("/")
-    getMyTasks(@Request() req: ExReq) {
-        return this.taskService.myTasks(req);
+    getMyTasks(@Param() id: string) {
+        return this.taskService.myTasks(id);
     }
 
     @UseGuards(JwtAuthGuard)

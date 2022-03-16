@@ -18,8 +18,8 @@ export class UserService {
         private readonly userRepository: EntityRepository<User>,
     ) {}
 
-    async profile(@Request() req): Promise<UserResponse> {
-        const user = await this.userRepository.findOne(req.user.userId);
+    async profile(@Param() id: string): Promise<UserResponse> {
+        const user = await this.userRepository.findOne(id);
         return { user };
     }
 

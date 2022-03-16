@@ -37,11 +37,14 @@ export type User = {
 export type Task = {
     __typename?: "Task";
     id: Scalars["ID"];
+    title: string;
     description: string;
     priority: TaskPriority;
     badge: Maybe<TaskBadge>;
     done: boolean;
     creator: User;
+    start: Scalars["DateTime"];
+    finish: Scalars["DateTime"];
     createdAt: Scalars["DateTime"];
     updatedAt: Scalars["DateTime"];
 };

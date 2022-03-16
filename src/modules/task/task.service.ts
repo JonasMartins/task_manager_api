@@ -1,7 +1,13 @@
 import { EntityRepository, wrap } from "@mikro-orm/core";
 import { InjectRepository } from "@mikro-orm/nestjs";
 import { Injectable, Param, Request } from "@nestjs/common";
-import { DeletedType, TaskResponse, TasksResponse } from "src/utils/types";
+import { convertStringToDate } from "src/utils/time";
+import {
+    DeletedType,
+    errorResponse,
+    TaskResponse,
+    TasksResponse,
+} from "src/utils/types";
 import { TaskDto } from "../auth/dto/task.dto";
 import { UserService } from "../user/user.service";
 import { Task } from "./../../entities/Task.entity";
@@ -14,8 +20,8 @@ export class TaskService {
         private userService: UserService,
     ) {}
 
-    async myTasks(@Request() req): Promise<TasksResponse> {
-        const user = await this.userService.getById(req.user.userId);
+    async myTasks(@Param() id: string): Promise<TasksResponse> {
+        const user = await this.userService.getById(id);
         return { tasks: user.user.tasks };
     }
 
@@ -35,11 +41,49 @@ export class TaskService {
             };
         }
 
+        const start = convertStringToDate(dto.start);
+        const finish = convertStringToDate(dto.finish);
+
+        if (!start || !finish) {
+            let errors: errorResponse[] = [];
+            if (!start) {
+                errors.push({
+                    field: "start",
+                    message: "Error formatting start date",
+                });
+            }
+
+            if (!finish) {
+                errors.push({
+                    field: "finish",
+                    message: "Error formatting finish date",
+                });
+            }
+
+            return {
+                errors,
+            };
+        } else {
+            if (start >= finish) {
+                return {
+                    errors: [
+                        {
+                            field: "finish",
+                            message: "Finish field must be greater than start",
+                        },
+                    ],
+                };
+            }
+        }
+
         const task = this.taskRepository.create({
+            title: dto.title,
             badge: dto.badge,
             done: dto.done,
             description: dto.description,
             priority: dto.priority,
+            start: start,
+            finish: finish,
             creator: creator.user,
         });
 
@@ -57,7 +101,54 @@ export class TaskService {
             };
         }
 
-        wrap(task).assign(dto);
+        const start = convertStringToDate(dto.start);
+        const finish = convertStringToDate(dto.finish);
+
+        if (!start || !finish) {
+            let errors: errorResponse[] = [];
+            if (!start) {
+                errors.push({
+                    field: "start",
+                    message: "Error formatting start date",
+                });
+            }
+
+            if (!finish) {
+                errors.push({
+                    field: "finish",
+                    message: "Error formatting finish date",
+                });
+            }
+
+            return {
+                errors,
+            };
+        } else {
+            if (start >= finish) {
+                return {
+                    errors: [
+                        {
+                            field: "finish",
+                            message: "Finish field must be greater than start",
+                        },
+                    ],
+                };
+            }
+        }
+
+        let updatedTask = new Task();
+        updatedTask.id = task.id;
+        updatedTask.badge = dto.badge;
+        updatedTask.createdAt = task.createdAt;
+        updatedTask.creator = task.creator;
+        updatedTask.title = dto.title;
+        updatedTask.description = dto.description;
+        updatedTask.priority = dto.priority;
+        updatedTask.updatedAt = task.updatedAt;
+        updatedTask.start = start;
+        updatedTask.finish = finish;
+
+        wrap(task).assign(updatedTask);
         await this.taskRepository.persistAndFlush(task);
 
         return { task };
