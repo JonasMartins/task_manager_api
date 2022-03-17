@@ -139,6 +139,7 @@ export class TaskService {
         let updatedTask = new Task();
         updatedTask.id = task.id;
         updatedTask.badge = dto.badge;
+        updatedTask.done = dto.done;
         updatedTask.createdAt = task.createdAt;
         updatedTask.creator = task.creator;
         updatedTask.title = dto.title;
